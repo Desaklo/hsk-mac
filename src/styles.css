@@ -16,7 +16,7 @@
   --shadow: 0 12px 32px rgba(80, 48, 24, 0.08);
   --radius: 18px;
   --ui: "Avenir Next", "Segoe UI", "Helvetica Neue", sans-serif;
-  --hanzi: "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", "Noto Sans SC", "Source Han Sans SC", "WenQuanYi Micro Hei", "Droid Sans Fallback", sans-serif;
+  --hanzi: "Kaiti SC", "Kaiti", "STKaiti", kai, serif;
   --ui-size: 18px;
   --hanzi-size: 96px;
 }
@@ -37,6 +37,17 @@ body {
 }
 
 button, select, input { font: inherit; color: inherit; }
+
+:lang(zh-Hans),
+.hanzi,
+.hanzi-choice,
+.hanzi-input,
+.example-zh,
+.row-hanzi,
+.cloze,
+.brand-mark {
+  font-family: var(--hanzi);
+}
 
 button, select { cursor: pointer; }
 
