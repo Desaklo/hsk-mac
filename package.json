@@ -1,0 +1,53 @@
+{
+  "name": "hsk-slova",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Карточки, интервальные повторения и тесты по словам HSK 3.0",
+  "main": "electron/main.cjs",
+  "author": "Desaklo",
+  "scripts": {
+    "prepare-words": "node scripts/prepare-words.mjs",
+    "start": "electron .",
+    "test": "node --test test/*.test.js",
+    "test:ui": "node test/ui-smoke.mjs",
+    "dist:mac": "CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac dmg zip --universal",
+    "dist:mac:arm": "CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac dmg zip --arm64",
+    "dist:mac:intel": "CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder --mac dmg zip --x64"
+  },
+  "devDependencies": {
+    "electron": "^33.4.11",
+    "electron-builder": "^25.1.8",
+    "puppeteer-core": "^23.11.1"
+  },
+  "build": {
+    "appId": "com.desaklo.hskslova",
+    "productName": "HSK Slova",
+    "icon": "build/icon.png",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "electron/**",
+      "src/**",
+      "data/hsk30.json",
+      "data/ATTRIBUTION.md",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.education",
+      "identity": null,
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "extendInfo": {
+        "CFBundleDisplayName": "HSK Слова"
+      }
+    },
+    "dmg": {
+      "title": "HSK Слова"
+    }
+  }
+}
