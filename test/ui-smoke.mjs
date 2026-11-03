@@ -51,6 +51,13 @@ function fail(message) {
   throw new Error(message)
 }
 
+async function expectKaiti(page, selector) {
+  const family = await page.$eval(selector, (el) => getComputedStyle(el).fontFamily)
+  if (!family.includes('Kaiti SC') || !family.includes('STKaiti') || !family.includes('kai')) {
+    fail(`${selector} font is ${family}`)
+  }
+}
+
 const server = await serve()
 const { port } = server.address()
 const browser = await puppeteer.launch({
@@ -75,6 +82,11 @@ try {
   await page.waitForSelector('[data-revealed="1"] .meaning')
   const meaning = await page.$eval('.meaning', (el) => el.textContent)
   if (!meaning.includes('love')) fail(meaning)
+  await expectKaiti(page, '.hanzi')
+  await expectKaiti(page, '.example-zh')
+  await expectKaiti(page, '.brand-mark')
+  const labelFont = await page.$eval('h1', (el) => getComputedStyle(el).fontFamily)
+  if (labelFont.includes('Kaiti')) fail(`UI label picked up Kaiti: ${labelFont}`)
   const covered = await page.evaluate(() => {
     const example = document.querySelector('.example-zh')?.getBoundingClientRect()
     const dock = document.querySelector('.dock')?.getBoundingClientRect()
@@ -95,6 +107,7 @@ try {
   await page.waitForSelector('.word-row')
   const hardText = await page.$eval('.word-list', (el) => el.innerText)
   if (!hardText.includes('爱') || !hardText.includes('love')) fail(hardText)
+  await expectKaiti(page, '.row-hanzi')
   await page.screenshot({ path: join(shots, 'hard.png') })
 
   await page.click('[data-nav="quiz"]')
@@ -104,6 +117,8 @@ try {
   await page.waitForSelector('.blank')
   const choices = await page.$$('[data-action="choose"]')
   if (choices.length !== 4) fail(`cloze choices: ${choices.length}`)
+  await expectKaiti(page, '.cloze')
+  await expectKaiti(page, '.hanzi-choice')
   await page.screenshot({ path: join(shots, 'quiz.png') })
   await page.click('[data-action="quiz-skip"]')
   await page.waitForSelector('.feedback')
