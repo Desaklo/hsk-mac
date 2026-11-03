@@ -6,6 +6,9 @@ on:
     tags:
       - "v*"
 
+permissions:
+  contents: write
+
 jobs:
   dmg:
     runs-on: macos-latest
@@ -17,13 +20,50 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
-      - run: npm run dist:mac
+      # A version tag makes electron-builder try to publish. It exits
+      # without GH_TOKEN even after the dmg exists, so publish stays off
+      # and the release step below uploads the files.
+      - run: npm run dist:mac -- --publish never
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: "false"
+      - name: Name the installers
+        run: |
+          set -euo pipefail
+          mkdir -p release-assets
+          dmg=$(find release -maxdepth 1 -type f -name '*.dmg' -print -quit)
+          zip=$(find release -maxdepth 1 -type f -name '*.zip' -print -quit)
+          test -n "$dmg"
+          test -n "$zip"
+          cp "$dmg" "release-assets/HSK Slova.dmg"
+          cp "$zip" "release-assets/HSK Slova-mac.zip"
+          ls -lh release-assets
       - uses: actions/upload-artifact@v4
         with:
           name: hsk-slova-macos
           path: |
-            release/*.dmg
-            release/*.zip
+            release-assets/HSK Slova.dmg
+            release-assets/HSK Slova-mac.zip
           if-no-files-found: error
+      - name: Publish GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: HSK Слова для Mac
+          fail_on_unmatched_files: true
+          files: |
+            release-assets/HSK Slova.dmg
+            release-assets/HSK Slova-mac.zip
+          body: |
+            Карточки, повторения и тесты по словам HSK 3.0. Слова уже внутри программы. После установки интернет не нужен.
+
+            Сборка универсальная: Apple Silicon и Intel.
+
+            ## Как установить
+
+            1. Скачайте **HSK Slova.dmg** и откройте его.
+            2. Перетащите **HSK Slova** в папку **Программы** (Applications).
+            3. Если macOS не открывает программу и пишет, что разработчик неизвестен (Gatekeeper), щёлкните по значку **правой кнопкой** → **Открыть** → ещё раз **Открыть**.
+
+            Программа без подписи Apple. Это обычная проверка Gatekeeper, не поломка файла.
+
+            **HSK Slova-mac.zip** — то же приложение, без окна установщика.
